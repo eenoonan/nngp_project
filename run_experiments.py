@@ -35,6 +35,13 @@ import time
 import numpy as np
 import tensorflow as tf
 
+## Patch ## E.Noonan 2026-08-27
+import numpy as np
+_old_load = np.load
+# Forces pickle allowance AND sets decoding to 'latin1' for Python 2 files
+np.load = lambda *a, **k: _old_load(*a, **{**k, 'allow_pickle': True, 'encoding': 'latin1'})
+##
+
 import gpr
 import load_dataset
 import nngp
