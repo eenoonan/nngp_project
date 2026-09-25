@@ -60,6 +60,12 @@ import gpr
 import load_dataset
 import nngp
 
+# additional libraries to support importing other data sets
+import gzip
+import os
+import urllib.request
+
+
 tf.logging.set_verbosity(tf.logging.INFO)
 
 flags = tf.app.flags
@@ -89,8 +95,10 @@ flags.DEFINE_integer('bin_size', 100,
                       'point, binned by predicted variance (100 in the '
                       'paper).')
 flags.DEFINE_integer('seed', 1234, 'Random number seed for data shuffling')
+
+# added additional data sets: kmnist and fmnist
 flags.DEFINE_string('dataset', 'mnist',
-                     'Which dataset to use ["mnist", "cifar10"]')
+                     'Which dataset to use ["mnist", "cifar10", "kmnist", "fmnist"]')
 flags.DEFINE_boolean('use_fixed_point_norm', False,
                       'Normalize input variance to fixed point variance')
 flags.DEFINE_integer('n_gauss', 501,
@@ -106,8 +114,19 @@ flags.DEFINE_string('output_file', '/nngp/output/uncertainty_fig3.png',
 # Paper-style palette: salmon red for Tanh, navy blue for ReLU.
 _COLORS = {'tanh': '#e8746c', 'relu': '#3b5b92'}
 _LABELS = {'tanh': 'Tanh', 'relu': 'ReLU'}
-_DATASET_LABELS = {'mnist': 'MNIST', 'cifar10': 'CIFAR','kmnist':'KMNIST'}
+# added additional data sets: kmnist and fmnist
+_DATASET_LABELS = {'mnist': 'MNIST', 'cifar10': 'CIFAR', 'kmnist': 'KMNIST', 'fmnist':'Fashion MNIST'}
 
+# _flatten and _one_hot functions were extracted from the load_cifar10 function to be called by all dataset load functions
+def _flatten(x):
+    return x.reshape(x.shape[0], -1).astype(np.float64) / 255.0
+
+
+def _one_hot(y, num_classes=10):
+    y = y.reshape(-1)
+    out = np.zeros((y.shape[0], num_classes), dtype=np.float64)
+    out[np.arange(y.shape[0]), y] = 1.0
+    return out
 
 def load_cifar10(num_train, mean_subtraction=True, num_valid=5000):
   """Loads CIFAR-10 as flattened, one-hot numpy arrays.
@@ -124,15 +143,6 @@ def load_cifar10(num_train, mean_subtraction=True, num_valid=5000):
 
   (x_train_full, y_train_full), (x_test, y_test) = cifar10.load_data()
 
-  def _flatten(x):
-    return x.reshape(x.shape[0], -1).astype(np.float64) / 255.0
-
-  def _one_hot(y, num_classes=10):
-    y = y.reshape(-1)
-    out = np.zeros((y.shape[0], num_classes), dtype=np.float64)
-    out[np.arange(y.shape[0]), y] = 1.0
-    return out
-
   x_train_full = _flatten(x_train_full)
   x_test = _flatten(x_test)
   y_train_full = _one_hot(y_train_full)
@@ -157,80 +167,143 @@ def load_cifar10(num_train, mean_subtraction=True, num_valid=5000):
 
   return train_image, train_label, valid_image, valid_label, x_test, y_test
 
-def load_ext_npz(set_name,set_url,file_name):
-    """Loads named dataset from externally linked npz file
-      """
 
-    # downloads data once, then reuses the cached copy at /data/<set_name>/<file_name>
-    path = tf.keras.utils.get_file(set_name, set_url+file_name,
-                                   cache_dir="/data/",cache_subdir=set_name)
-    return np.load(path)["arr_0"]
+def load_ext_dataset(base_url, ds_name='data_set'):
+    """
+    base_url should point to the raw GitHub directory containing:
+      train-images-idx3-ubyte.gz
+      train-labels-idx1-ubyte.gz
+      t10k-images-idx3-ubyte.gz
+      t10k-labels-idx1-ubyte.gz
+    """
+    cache_dir = "." + ds_name + "/data_cache"
 
+    os.makedirs(cache_dir, exist_ok=True)
+
+    files = {
+        "train_images": "train-images-idx3-ubyte.gz",
+        "train_labels": "train-labels-idx1-ubyte.gz",
+        "test_images": "t10k-images-idx3-ubyte.gz",
+        "test_labels": "t10k-labels-idx1-ubyte.gz",
+    }
+
+    local_paths = {}
+    for key, fname in files.items():
+        url = base_url + fname
+        dest = os.path.join(cache_dir, fname)
+        download_gz(url, dest)
+        local_paths[key] = dest
+
+    x_train = load_idx_images(local_paths["train_images"])
+    y_train = load_idx_labels(local_paths["train_labels"])
+    x_test = load_idx_images(local_paths["test_images"])
+    y_test = load_idx_labels(local_paths["test_labels"])
+
+    return (x_train, y_train), (x_test, y_test)
+
+def load_idx_images(gz_path):
+    """Parse an idx3-ubyte.gz image file into a (N, H, W) uint8 array."""
+    with gzip.open(gz_path, 'rb') as f:
+        data = f.read()
+    # First 16 bytes: magic number, num_images, rows, cols (big-endian uint32s)
+    magic, num_images, rows, cols = np.frombuffer(data[0:16], dtype='>u4')
+    images = np.frombuffer(data[16:], dtype=np.uint8)
+    images = images.reshape(num_images, rows, cols)
+    return images
+
+
+def load_idx_labels(gz_path):
+    """Parse an idx1-ubyte.gz label file into a (N,) uint8 array."""
+    with gzip.open(gz_path, 'rb') as f:
+        data = f.read()
+    # First 8 bytes: magic number, num_labels
+    magic, num_labels = np.frombuffer(data[0:8], dtype='>u4')
+    labels = np.frombuffer(data[8:], dtype=np.uint8)
+    return labels
 
 
 def load_kmnist(num_train, mean_subtraction=True, num_valid=5000):
-  """Loads KMNIST as flattened, one-hot numpy arrays.
+    """Load the KMNIST dataset.
+    Git Hub repository: https://github.com/rois-codh/kmnist/"""
+    ds_name = "kmnist"
+    base_url = "http://codh.rois.ac.jp/kmnist/dataset/kmnist/"
 
-  Not part of the original repo's load_dataset.py (which only implements
-  MNIST) -- added here so this file is a self-contained drop-in and doesn't
-  require editing load_dataset.py. Mirrors load_dataset.load_mnist's
-  signature and output shapes: [N, 3072] float inputs, [N, 10] one-hot
-  labels, with train/valid/test splits.
-  """
+    (x_train, y_train), (x_test, y_test) = load_ext_dataset(base_url, ds_name)
 
-  # Set details for KMNIST
-  kmnist_name = 'kmnist'
-  kmnist_url = "http://codh.rois.id.ac.jp/kmnist/dataset/kmnist/"
-  kmnist_test_img = "kmnist-test-imgs.npz"
-  kmnist_test_label = "kmnist-test-labels.npz"
+    print(x_train.shape, y_train.shape)  # (60000, 28, 28) (60000,)
+    print(x_test.shape, y_test.shape)  # (10000, 28, 28) (10000,)
 
-  # download kmnist images and labels
-  x_train_full = load_ext_npz(kmnist_name, kmnist_url, kmnist_test_img)
+    x_train_full = _flatten(x_train)
+    x_test = _flatten(x_test)
+    y_train_full = _one_hot(y_train)
+    y_test = _one_hot(y_test)
 
-  y_train_full = load_ext_npz(kmnist_name, kmnist_url, kmnist_test_label)
+    if num_train + num_valid > x_train_full.shape[0]:
+        raise ValueError(
+            'num_train (%d) + validation holdout (%d) exceeds the KMNIST '
+            'training set size (%d).' % (
+                num_train, num_valid, x_train_full.shape[0]))
 
-  x_test = load_ext_npz(kmnist_name, kmnist_url, kmnist_test_img)
+    train_image = x_train_full[:num_train]
+    train_label = y_train_full[:num_train]
+    valid_image = x_train_full[-num_valid:]
+    valid_label = y_train_full[-num_valid:]
 
-  y_test = load_ext_npz(kmnist_name, kmnist_url, kmnist_test_label)
+    if mean_subtraction:
+        mean = train_image.mean(axis=0)
+        train_image = train_image - mean
+        valid_image = valid_image - mean
+        x_test = x_test - mean
 
-  # check dimensions
-  print(x_train_full.shape, y_train_full.shape)  # (60000, 28, 28)
-  print(x_test.shape, y_test.shape)  # (10000, 28, 28)
+    return train_image, train_label, valid_image, valid_label, x_test, y_test
 
-  return (x_train_full, y_train_full), (x_test, y_test)
 
-  def _flatten(x):
-    return x.reshape(x.shape[0], -1).astype(np.float64) / 255.0
+def load_fmnist(num_train, mean_subtraction=True, num_valid=5000):
+    """Load the Fashion MNIST dataset.
+    Git Hub repository: https://github.com/zalandoresearch/fashion-mnist/"""
 
-  def _one_hot(y, num_classes=10):
-    y = y.reshape(-1)
-    out = np.zeros((y.shape[0], num_classes), dtype=np.float64)
-    out[np.arange(y.shape[0]), y] = 1.0
-    return out
+    ds_name = "fmnist"
+    base_url = "http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/"
 
-  x_train_full = _flatten(x_train_full)
-  x_test = _flatten(x_test)
-  y_train_full = _one_hot(y_train_full)
-  y_test = _one_hot(y_test)
+    (x_train, y_train), (x_test, y_test) = load_ext_dataset(base_url, ds_name)
 
-  if num_train + num_valid > x_train_full.shape[0]:
-    raise ValueError(
-        'num_train (%d) + validation holdout (%d) exceeds the CIFAR-10 '
-        'training set size (%d).' % (
-            num_train, num_valid, x_train_full.shape[0]))
+    print(x_train.shape, y_train.shape)  # (60000, 28, 28) (60000,)
+    print(x_test.shape, y_test.shape)  # (10000, 28, 28) (10000,)
 
-  train_image = x_train_full[:num_train]
-  train_label = y_train_full[:num_train]
-  valid_image = x_train_full[-num_valid:]
-  valid_label = y_train_full[-num_valid:]
+    x_train_full = _flatten(x_train)
+    x_test = _flatten(x_test)
+    y_train_full = _one_hot(y_train)
+    y_test = _one_hot(y_test)
 
-  if mean_subtraction:
-    mean = train_image.mean(axis=0)
-    train_image = train_image - mean
-    valid_image = valid_image - mean
-    x_test = x_test - mean
+    if num_train + num_valid > x_train_full.shape[0]:
+        raise ValueError(
+            'num_train (%d) + validation holdout (%d) exceeds the Fashion MNIST '
+            'training set size (%d).' % (
+                num_train, num_valid, x_train_full.shape[0]))
 
-  return train_image, train_label, valid_image, valid_label, x_test, y_test
+    train_image = x_train_full[:num_train]
+    train_label = y_train_full[:num_train]
+    valid_image = x_train_full[-num_valid:]
+    valid_label = y_train_full[-num_valid:]
+
+    if mean_subtraction:
+        mean = train_image.mean(axis=0)
+        train_image = train_image - mean
+        valid_image = valid_image - mean
+        x_test = x_test - mean
+
+    return train_image, train_label, valid_image, valid_label, x_test, y_test
+
+
+# added to download external data sets from git hub
+def download_gz(url, dest_path):
+    """Download a .gz file if not already cached locally."""
+    if not os.path.exists(dest_path):
+        print(f"Downloading {url} -> {dest_path}")
+        urllib.request.urlretrieve(url, dest_path)
+    else:
+        print(f"Using cached {dest_path}")
+
 
 def set_default_hparams():
   return tf.contrib.training.HParams(
@@ -363,6 +436,14 @@ def run(hparams, run_dir):
     (train_image, train_label, _, _, test_image,
      test_label) = load_cifar10(
          num_train=FLAGS.num_train, mean_subtraction=True)
+  elif FLAGS.dataset == 'kmnist':
+      (train_image, train_label, _, _, test_image,
+       test_label) = load_kmnist(
+          num_train=FLAGS.num_train, mean_subtraction=True)
+  elif FLAGS.dataset == 'fmnist':
+      (train_image, train_label, _, _, test_image,
+       test_label) = load_fmnist(
+          num_train=FLAGS.num_train, mean_subtraction=True)
   else:
     raise NotImplementedError(FLAGS.dataset)
 
