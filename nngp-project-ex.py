@@ -1,4 +1,4 @@
-# nngp-project.py
+# nngp-project-ex.py
 
 # This script executes the necessary commands to download, process, and plot datasets
 # for a Neural Network Gaussian Process kernel demonstration that is based on the work of

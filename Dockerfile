@@ -36,8 +36,13 @@ RUN pip install --no-cache-dir matplotlib
 # `docker run nngp-project` with no extra args reproduces the MNIST panel;
 # any arguments passed to `docker run` after the image name replace the
 # CMD list below and go straight to uncertainty_plot.py.
-ENTRYPOINT ["python", "uncertainty_plot.py"]
-CMD ["--dataset=mnist", "--num_train=1000", "--num_eval=1000", \
-     "--hparams=depth=3,weight_var=2.0,bias_var=0.2", \
-     "--nonlinearities=tanh,relu", \
-     "--output_file=/nngp/output/uncertainty_fig3_mnist.png"]
+##ENTRYPOINT ["python", "uncertainty_plot.py"]
+##CMD ["--dataset=mnist", "--num_train=1000", "--num_eval=1000", \
+##     "--hparams=depth=3,weight_var=2.0,bias_var=0.2", \
+##     "--nonlinearities=tanh,relu", \
+##     "--output_file=/nngp/output/uncertainty_fig3_mnist.png"]
+
+# entrypoint has been modified from code above to run the script nngp-project-ex.py,
+# which provides a user prompt to select which version of the training numbers to run
+# and produces plots for multiple data sets as documented in the README.
+ENTRYPOINT ["python", "nngp-project-ex.py"]
