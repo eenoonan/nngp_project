@@ -20,7 +20,7 @@ extract and plot per-example predictive variance against per-example squared err
 ### Results Summary
 The instructor-provided script, uncertainty_plot.py, recreates Figure 3 from the paper. 
 
-![](C:\Users\eenoo\Pictures\Screenshots\NNGP_Figure_3.png)
+>![](./img/NNGP_Figure_3.png)
 >**Figure 1.** Prediction uncertainty for MNIST and CIFAR-10 datasets 
 >(Figure 3 from "Deep Neural Networks as Gaussian Processes")
 
@@ -31,10 +31,10 @@ data volume, the reproduced plot shows the same general clustering and relations
 both nonlinearities. Additionally, NNGP Figure 8 in the appendix (Figure 2 below) includes these same plots with 
 reduced number of training points (1000 and 5000). The calculated correlation values are summarized in Table 1. 
 
-![](C:\Users\eenoo\Pictures\Screenshots\NNGP_Figure_8.png)
-
+>![](./img/NNGP_Figure_8.png)
 > **Figure 2.** Prediction uncertainty for smaller number of training points 
 > (Figure 8 from "Deep Neural Networks as Gaussian Processes")
+
 
 > **Table 1.** Comparison of Correlation Values for NNGP Paper and Reproduction Code 
 > 
@@ -51,6 +51,14 @@ reduced number of training points (1000 and 5000). The calculated correlation va
 The code recreating the paper images produced plots that show similar trends and generally calculated nonlinearity 
 correlation values on the same order as the paper's though it is noted that not all correlation values had the 
 same best performer as the paper.
+
+>![](./img/MNIST_Results_Comp.jpg)
+>**Figure 4.** Comparison of MNIST Results 
+> The reproduced results show the similar shape and point distribution to the published results. 
+
+> ![](./img/CIFAR_Results_Comp.jpg)
+>**Figure 5.** Comparison of CIFAR-10 Results
+> The reproduced results show the similar shape and point distribution to the published results.
 
 To extend this analysis, additional datasets were selected to use for evaluation of the NNGP approach and the 
 training set size was extended to include an option of 5000 in addition to the 1000 option. Two data sets were selected 
@@ -69,8 +77,9 @@ The Fashion MNIST dataset is a set of 70,000 28x28 grayscale images of clothing 
 The dataset is intended to be used as a drop in replacement for MNIST but is considered a more complex image dataset. 
 The dataset and additional details are available on GitHub: https://github.com/zalandoresearch/fashion-mnist.
 
-![](C:\Users\eenoo\Downloads\STAT_5720_Projects\Proj_NNGP - Copy\NNGP_Extension_Graphical_Results.png)
+>![](./img/NNGP_Extension_Graphical_Results.png)
 > **Figure 3.** Prediction uncertainty from Extended Analysis
+
 
 > **Table 2.** Comparison of Correlation Values from Extended Analysis 
 >
@@ -79,7 +88,7 @@ The dataset and additional details are available on GitHub: https://github.com/z
 | MNIST    | 0.9833       | 0.9725       | 0.9840       | 0.9710       |
 | KMNIST   | 0.9884       | 0.9372       | 0.9908       | 0.9555       |
 | FMNIST   | 0.9573       | 0.9693       | 0.9671       | 0.9665       |
-| CIFAR-10 | 0.9366       | 0.8636       | 0.7200       | 0.7948       | 
+| CIFAR-10 | 0.9366       | 0.8636       | 0.7200       | 0.7948       |
 
 The additional datasets show similar correlations in the MSE output variation relationships and, as anticipated, the 
 graphical clustering of the results show a progression that suggests that the complexity of the images increases the 
@@ -90,10 +99,6 @@ as more overlap between the groups. The CIFAR-10 has the lowest correlation scor
 most complex dataset. For KMNIST and Fashion MNIST, the higher correlation values switched depending on the training 
 size, with the 1k sets favoring KMNIST and the 5K sets favoring Fashion MNIST.  
 
-
-
-
-
 ### Execution Instructions
 
 In order to copy and run this code, follow the steps below:
@@ -101,8 +106,14 @@ In order to copy and run this code, follow the steps below:
 1. git clone https://github.com/eenoonan/nngp_project
 2. cd nngp_project
 3. docker build --platform linux/amd64 -t nngp-project .
+
+Note: The first time the code runs (called in step 4) datasets will be downloaded from the internet before executing 
+the analysis. These downloads can take more than 30 minutes to complete.
+
 4. docker run --platform linux/amd64 -it -v "$(pwd)/output:/nngp/output" nngp-project
-5. 
+5. Enter the desired training set size to run: 1. 1k only, 2. 5k only, 3. All (1k & 5k) 
+(Selection applies to all 4 datasets)
+6. Generated versions of Figure 3 will be saved to the output folder and labeled with the dataset and set size
 
 ### Limitations
 
@@ -111,7 +122,8 @@ source paper. Those were 45k and 50k training sets and would have required signi
 beyond the scope of this exercise. Rather, 1k and 5k training sets were used to approximate the resulting plots and to 
 generate similar ones for the new data sets. 
 
-_____________________________________
+**_____________________________________________________________**
+
 
 # NNGP: Deep Neural Network Kernel for Gaussian Process
 
