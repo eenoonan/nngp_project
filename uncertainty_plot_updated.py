@@ -22,27 +22,16 @@ per-point scatter into the clean trend shown in the paper).
 
 Usage (from inside the nngp/ directory, same as run_experiments.py):
 
-# Single nonlinearity (whatever --hparams specifies):
-python uncertainty_plot.py \
-    --num_train=1000 --num_eval=1000 \
-    --hparams='nonlinearity=relu,depth=10,weight_var=1.79,bias_var=0.83' \
-    --output_file=/nngp/uncertainty_fig3.png
+# Code in this script is called by nngp-project-ex.py
+# which specifies the following hyperparameters:
+        'dataset'
+        'num_train'
+        'num_eval'
+        'params': 'depth=_,weight_var=_,bias_var=_'
+        'nonlinearities'
+        'output_file'
 
-# Both nonlinearities in one plot, matching the paper's two-color figure
-# (depth/weight_var/bias_var below match the paper's Figure 3 caption):
-python uncertainty_plot.py \
-    --num_train=1000 --num_eval=1000 \
-    --hparams='depth=3,weight_var=2.0,bias_var=0.2' \
-    --nonlinearities='tanh,relu' \
-    --output_file=/nngp/uncertainty_fig3.png
-
-# CIFAR-10 instead of MNIST (uses a small CIFAR-10 loader defined in this
-# file, since the original repo's load_dataset.py only implements MNIST):
-python uncertainty_plot.py \
-    --dataset=cifar10 --num_train=1000 --num_eval=1000 \
-    --hparams='depth=3,weight_var=2.0,bias_var=0.2' \
-    --nonlinearities='tanh,relu' \
-    --output_file=/nngp/uncertainty_fig3_cifar.png
+# Only the default hyperparameters not listed above are used as specified in this script.
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -117,7 +106,8 @@ _LABELS = {'tanh': 'Tanh', 'relu': 'ReLU'}
 # added additional data sets: kmnist and fmnist
 _DATASET_LABELS = {'mnist': 'MNIST', 'cifar10': 'CIFAR', 'kmnist': 'KMNIST', 'fmnist':'Fashion MNIST'}
 
-# _flatten and _one_hot functions were extracted from the load_cifar10 function to be called by all dataset load functions
+# _flatten and _one_hot functions were extracted from the load_cifar10 function
+# to be called by all dataset load functions
 def _flatten(x):
     return x.reshape(x.shape[0], -1).astype(np.float64) / 255.0
 
@@ -224,7 +214,7 @@ def load_idx_labels(gz_path):
 
 def load_kmnist(num_train, mean_subtraction=True, num_valid=5000):
     """Load the KMNIST dataset.
-    Git Hub repository: https://github.com/rois-codh/kmnist/"""
+    GitHub repository: https://github.com/rois-codh/kmnist/"""
     ds_name = "kmnist"
     base_url = "http://codh.rois.ac.jp/kmnist/dataset/kmnist/"
 
@@ -260,7 +250,7 @@ def load_kmnist(num_train, mean_subtraction=True, num_valid=5000):
 
 def load_fmnist(num_train, mean_subtraction=True, num_valid=5000):
     """Load the Fashion MNIST dataset.
-    Git Hub repository: https://github.com/zalandoresearch/fashion-mnist/"""
+    GitHub repository: https://github.com/zalandoresearch/fashion-mnist/"""
 
     ds_name = "fmnist"
     base_url = "http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/"

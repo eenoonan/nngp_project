@@ -1,4 +1,5 @@
 ## STAT 5720 Project 2: Reproducing Results from "Deep Neural Networks as Gaussian Processes"
+Project GitHub: https://github.com/eenoonan/nngp_project
 
 Added by E. Noonan
 
@@ -17,8 +18,46 @@ with its actual squared prediction error. This is directly computable from the G
 regression outputs the existing code already produces internally. You will need to 
 extract and plot per-example predictive variance against per-example squared error.
 
-### Results Summary
-The instructor-provided script, uncertainty_plot.py, recreates Figure 3 from the paper. 
+### Approach
+Two additional data sets were incorporated to provide additional perspective on the Gaussian
+Process performance. Additionally, the recreation of Figure 3 was conducted with 5000 points
+in addition to the 1000 that were used in the provided script.
+
+The code from the provided script (uncertainty_plot.py) was modified (uncertainty_plot_updated.py) 
+to download and incorporate the additional dataset (KMNIST and Fashion MNIST) as options for 
+analysis. Additionally, some of the data handling steps incorporated for the CIFAR-10 data, 
+flatten and one-hot encoding, were extracted from the CIFAR loading function to be available for
+use in other functions for additional data sets. Functions were added to download the additional
+datasets and format them for use with the existing NNGP functions. An additional script 
+(nngp-project-ex.py) was added to solicit user input for which variations of analysis to run and
+to execute a loop to produce and save graphics for all data sets available. The dockerfile was 
+modified to point to this new script to execute the steps required to meet the analysis requirements. 
+
+
+### Execution Instructions
+
+In order to copy and run this code, follow the steps below:
+
+1. git clone https://github.com/eenoonan/nngp_project
+2. cd nngp_project
+3. docker build --platform linux/amd64 -t nngp-project .
+
+Note: The first time the code runs (called in step 4) datasets will be downloaded from the internet before executing 
+the analysis. These downloads can take more than 30 minutes to complete.
+
+4. docker run --platform linux/amd64 -it -v "$(pwd)/output:/nngp/output" nngp-project
+5. Enter the desired training set size to run: 1. 1k only, 2. 5k only, 3. All (1k & 5k) 
+(Selection applies to all 4 datasets)
+6. Generated versions of Figure 3 will be saved to the output folder and labeled with the dataset and set size
+
+
+### Results
+
+Figure 3 is recreated using the original datasets (with a smaller number of points) and leveraging the code in 
+the instructor-provided script, uncertainty_plot.py. The extension of this analysis is to implement additional 
+data sets and generate correlation values and plots of prediction uncertainty for the new datasets and compare 
+them to the original and reproduced plots. The new datasets show similar high correlation between the NNGP 
+uncertainty estimate and the prediction error, consistent with the conclusions of the paper. 
 
 >![](./img/NNGP_Figure_3.png)
 >**Figure 1.** Prediction uncertainty for MNIST and CIFAR-10 datasets 
@@ -98,22 +137,6 @@ color to the CIFAR-10 images further increasing complexity. The outcomes from th
 as more overlap between the groups. The CIFAR-10 has the lowest correlation scores, which is not unexpected for the 
 most complex dataset. For KMNIST and Fashion MNIST, the higher correlation values switched depending on the training 
 size, with the 1k sets favoring KMNIST and the 5K sets favoring Fashion MNIST.  
-
-### Execution Instructions
-
-In order to copy and run this code, follow the steps below:
-
-1. git clone https://github.com/eenoonan/nngp_project
-2. cd nngp_project
-3. docker build --platform linux/amd64 -t nngp-project .
-
-Note: The first time the code runs (called in step 4) datasets will be downloaded from the internet before executing 
-the analysis. These downloads can take more than 30 minutes to complete.
-
-4. docker run --platform linux/amd64 -it -v "$(pwd)/output:/nngp/output" nngp-project
-5. Enter the desired training set size to run: 1. 1k only, 2. 5k only, 3. All (1k & 5k) 
-(Selection applies to all 4 datasets)
-6. Generated versions of Figure 3 will be saved to the output folder and labeled with the dataset and set size
 
 ### Limitations
 

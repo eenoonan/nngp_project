@@ -19,17 +19,27 @@
 # 3. Solicit user input to run the 1000, 5000 or both for the four available data sets
 
 # The Kuzushiji-MNIST dataset consists of 70,000 28x28 grayscale images of Japanese Hiragana characters
-# that can be used as a drop in replacement for MNIST but is considered a more challenging dataset than the baseline MNIST.
+# that can be used as a drop in replacement for MNIST but is considered a more challenging dataset than
+# the baseline MNIST.
 # Citations for this dataset are:
-# "KMNIST Dataset" (created by CODH), adapted from "Kuzushiji Dataset" (created by NIJL and others), doi:10.20676/00000341
+# "KMNIST Dataset" (created by CODH), adapted from "Kuzushiji Dataset" (created by NIJL and others),
+# doi:10.20676/00000341
 # and the associated paper: Deep Learning for Classical Japanese Literature. Tarin Clanuwat et al. arXiv:1812.01718
 # The dataset and additional details are available on GitHub: https://github.com/rois-codh/kmnist.
 
-# The Fashion MNIST dataset is a set of 70,000 28x28 grayscale images of clothing items taken from Zalando article images.
+# The Fashion MNIST dataset is a set of 70,000 28x28 grayscale images of clothing items taken from Zalando
+# article images.
 # The dataset is intended to be used as a drop in replacement for MNIST but is considered a more complex image dataset.
 # The dataset and additional details are available on GitHub: https://github.com/zalandoresearch/fashion-mnist.
 
 import subprocess
+
+# Establish the different configuration run options:
+# configs_all: mnist, cifar10, kmnist, and fashion mnist run for num_train and num_eval set to 1000 and then 5000
+# configs_1k: mnist, cifar10, kmnist, and fashion mnist run for num_train and num_eval set to 1000
+# configs_5k: mnist, cifar10, kmnist, and fashion mnist run for num_train and num_eval set to 5000
+
+# no changes implemented to hyperparameters or non-linearities
 
 configs_all = [
     # 1000 point runs for mnist, cifar10, kmnist, and fmnist
@@ -182,7 +192,7 @@ elif configs_select == '2':
 else:
     configs = configs_all
 
-# pass selected configs to run code and generate Fig 3 for all datasets
+# pass selected configs to run code and generate Fig 3 equivalent for all datasets
 for i, cfg in enumerate(configs):
     args = ['python', 'uncertainty_plot_updated.py'] + [f'--{k}={v}' for k, v in cfg.items()]
     print(f"[{i+1}/{len(configs)}] Running: {' '.join(args)}")
