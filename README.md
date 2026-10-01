@@ -145,6 +145,100 @@ source paper. Those were 45k and 50k training sets and would have required signi
 beyond the scope of this exercise. Rather, 1k and 5k training sets were used to approximate the resulting plots and to 
 generate similar ones for the new data sets. 
 
+### References and Licenses
+
+#### NNGP: Deep Neural Network Kernel for Gaussian Process
+
+##### <u>Citation:</u>
+```
+  @article{
+    lee2018deep,
+    title={Deep Neural Networks as Gaussian Processes},
+    author={Jaehoon Lee, Yasaman Bahri, Roman Novak, Sam Schoenholz, Jeffrey Pennington, Jascha Sohl-dickstein},
+    journal={International Conference on Learning Representations},
+    year={2018},
+    url={https://openreview.net/forum?id=B1EA-M-0Z},
+  }
+```
+
+##### <u>License:</u>
+
+ Copyright 2018 Google LLC
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+'''Neural Network Gaussian Process (nngp) kernel computation.
+
+Implementaion based on
+"Deep Neural Networks as Gaussian Processes" by
+Jaehoon Lee, Yasaman Bahri, Roman Novak, Samuel S. Schoenholz,
+Jeffrey Pennington, Jascha Sohl-Dickstein
+arXiv:1711.00165 (https://arxiv.org/abs/1711.00165).
+'''
+
+
+#### Kuzushiji-MNIST dataset
+##### <u>Citation:</u>
+```
+@online{clanuwat2018deep,
+  author       = {Tarin Clanuwat and Mikel Bober-Irizar and Asanobu Kitamoto and Alex Lamb and Kazuaki Yamamoto and David Ha},
+  title        = {Deep Learning for Classical Japanese Literature},
+  date         = {2018-12-03},
+  year         = {2018},
+  eprintclass  = {cs.CV},
+  eprinttype   = {arXiv},
+  eprint       = {cs.CV/1812.01718},
+}
+```
+
+##### <u>License:</u>
+
+Both the dataset itself and the contents of the repo are licensed under a permissive CC BY-SA 4.0 license, 
+except where specified within some benchmark scripts. CC BY-SA 4.0 license requires attribution.
+
+"KMNIST Dataset" (created by CODH), adapted from "Kuzushiji Dataset" (created by NIJL and others), doi:10.20676/00000341
+
+
+#### Fashion MNIST dataset 
+
+##### <u>Citation:</u>
+```
+@online{xiao2017/online,
+  author       = {Han Xiao and Kashif Rasul and Roland Vollgraf},
+  title        = {Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms},
+  date         = {2017-08-28},
+  year         = {2017},
+  eprintclass  = {cs.LG},
+  eprinttype   = {arXiv},
+  eprint       = {cs.LG/1708.07747},
+}
+```
+##### <u>License:</u>
+The MIT License (MIT) Copyright © [2017] Zalando SE, https://tech.zalando.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation 
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and 
+to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions 
+of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 **_____________________________________________________________**
 
 
